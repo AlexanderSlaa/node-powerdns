@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/AlexanderSlaa/node-powerdns/compare/v1.0.1...v1.1.0) (2026-03-15)
+
+
+### Features
+
+* **examples:** add list zones usage example ([85c3e0f](https://github.com/AlexanderSlaa/node-powerdns/commit/85c3e0fca20580949877bbcd0bb3c3e6ac27b1cf))
+
 ## [1.0.1](https://github.com/AlexanderSlaa/node-powerdns/compare/v1.0.0...v1.0.1) (2026-03-15)
 
 
