@@ -45,7 +45,7 @@
   "bugs": {
     "url": "https://github.com/AlexanderSlaa/node-powerdns/issues"
   },
-  "homepage": "https://github.com/AlexanderSlaa/node-powerdns#readme",
+  "homepage": "https://alexanderslaa.github.io/node-powerdns/",
   "publishConfig": {
     "access": "public"
   },
