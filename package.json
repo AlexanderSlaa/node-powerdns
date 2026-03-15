@@ -15,6 +15,7 @@
   },
   "files": [
     "dist",
+    "examples",
     "README.md",
     "LICENSE"
   ],
@@ -26,7 +27,13 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "docs:build": "typedoc src/index.ts --out generated/docs --name \"node-powerdns\" --excludePrivate --excludeProtected"
+    "docs:build": "typedoc src/index.ts --out generated/docs --name \"node-powerdns\" --excludePrivate --excludeProtected",
+    "examples/list-zones": "tsx --env-file=.env ./examples/list-zones.example.ts",
+    "examples/create-record": "tsx --env-file=.env ./examples/create-record.example.ts",
+    "examples/update-record": "tsx --env-file=.env ./examples/update-record.example.ts",
+    "examples/delete-record": "tsx --env-file=.env ./examples/delete-record.example.ts",
+    "examples/update-zone": "tsx --env-file=.env ./examples/update-zones.example.ts",
+    "examples/create-zone-with-record-comment": "tsx --env-file=.env ./examples/ccreate-zone-with-record-comment.example.ts"
   },
   "repository": {
     "type": "git",
@@ -58,6 +65,7 @@
     "@types/node": "^24.3.0",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
+    "tsx": "^4.21.0",
     "typedoc": "^0.28.15",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",

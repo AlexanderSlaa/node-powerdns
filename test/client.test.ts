@@ -22,6 +22,15 @@ const makeClient = () =>
 		extra: { traceId: 'trace-1' }
 	});
 
+const makeClientWithFetch = (fetch: typeof globalThis.fetch) =>
+	new Client({
+		baseUrl: 'http://127.0.0.1:8081',
+		apiKey: 'test-key',
+		version: Versions[0],
+		extra: { traceId: 'trace-1' },
+		fetch
+	});
+
 const exampleZone = {
 	id: 'example.org.',
 	name: 'example.org.',
@@ -63,6 +72,15 @@ describe('Client', () => {
 		expect(client.webserverUrl.toString()).toBe('http://127.0.0.1:8081/');
 		expect(client.version).toBe('/api/v1');
 		expect(client.extra).toEqual({ traceId: 'trace-1' });
+	});
+
+	it('defaults the API version when omitted', () => {
+		const client = new Client({
+			baseUrl: 'http://127.0.0.1:8081/',
+			apiKey: 'test-key'
+		});
+
+		expect(client.version).toBe(Versions[0]);
 	});
 
 	it('exports Client as the default export', () => {
@@ -125,6 +143,41 @@ describe('Client', () => {
 
 		expect(String(fetchMock.mock.calls[0][0])).toBe('http://127.0.0.1:8081/metrics');
 		expect(((fetchMock.mock.calls[0][1] as RequestInit).headers as Headers).get('X-API-Key')).toBe('test-key');
+	});
+
+	it('uses a custom fetch override for versioned and webserver endpoints', async () => {
+		const customFetch = vi
+			.fn<typeof globalThis.fetch>()
+			.mockImplementationOnce(async () => jsonResponse([{ id: 'localhost', type: 'Server' }]))
+			.mockImplementationOnce(async () => textResponse('metric_name 1'));
+
+		const client = makeClientWithFetch(customFetch);
+
+		await expect(client.servers.list()).resolves.toEqual([{ id: 'localhost', type: 'Server' }]);
+		await expect(client.metrics.get()).resolves.toBe('metric_name 1');
+		expect(customFetch).toHaveBeenCalledTimes(2);
+		expect(customFetch.mock.calls[0][0]).toBe('http://127.0.0.1:8081/api/v1/servers');
+		expect(String(customFetch.mock.calls[1][0])).toBe('http://127.0.0.1:8081/metrics');
+	});
+
+	it('uses an optional logger for request errors', async () => {
+		const logger = { error: vi.fn() };
+		vi.spyOn(globalThis, 'fetch').mockImplementation(async () => jsonResponse({ error: 'boom', errors: ['detail'] }, 500));
+
+		const client = new Client({
+			baseUrl: 'http://127.0.0.1:8081',
+			apiKey: 'test-key',
+			logger
+		});
+
+		await expect(client.servers.get()).rejects.toEqual({
+			error: 'boom',
+			errors: ['detail']
+		});
+		expect(logger.error).toHaveBeenCalledWith({
+			error: 'boom',
+			errors: ['detail']
+		});
 	});
 
 	it('throws a fallback HTTP error when metrics response is not JSON', async () => {

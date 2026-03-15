@@ -57,35 +57,46 @@ export enum ZoneType {
 }
 
 /**
- * Full zone payload returned by PowerDNS.
+ * Zone summary payload returned by the zone list endpoint.
+ *
+ * `rrsets` are omitted from this shape, and `dnssec` / `edited_serial` may
+ * also be omitted when the upstream `dnssec=false` query flag is used.
  *
  * @see https://doc.powerdns.com/authoritative/http-api/zone.html
  */
-export type Zone = {
+export type ZoneSummary = {
 	id: string;
 	name: string;
-	type: 'Zone';
 	url: string;
 	kind: ZoneType;
-	rrsets: RRSet[];
 	serial: number;
 	notified_serial: number;
-	edited_serial: number;
+	edited_serial?: number;
 	masters: string[];
-	dnssec: boolean;
-	nsec3param: string;
-	nsec3narrow: boolean;
-	presigned: boolean;
-	soa_edit: string;
-	soa_edit_api: string;
-	api_rectify: boolean;
-	zone?: string;
+	dnssec?: boolean;
 	catalog?: string;
 	account: string;
-	nameservers?: string[];
-	master_tsig_key_ids: string[];
-	slave_tsig_key_ids: string[];
 	last_check?: number;
+};
+
+/**
+ * Full zone payload returned by zone detail and create endpoints.
+ *
+ * @see https://doc.powerdns.com/authoritative/http-api/zone.html
+ */
+export type Zone = ZoneSummary & {
+	type?: 'Zone';
+	rrsets?: RRSet[];
+	nsec3param?: string;
+	nsec3narrow?: boolean;
+	presigned?: boolean;
+	soa_edit?: string;
+	soa_edit_api?: string;
+	api_rectify?: boolean;
+	zone?: string;
+	nameservers?: string[];
+	master_tsig_key_ids?: string[];
+	slave_tsig_key_ids?: string[];
 };
 
 /**

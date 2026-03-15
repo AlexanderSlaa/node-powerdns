@@ -27,6 +27,7 @@ You can import the client as either the default export or the named `Client` exp
 ### Runtime model
 
 - Uses the built-in `fetch()` available in modern Node.js.
+- Allows an optional `fetch` override for custom transport behavior.
 - Minimal abstraction over raw PowerDNS endpoints.
 - JSON, text, and void response helpers for the different endpoint behaviors.
 
@@ -58,7 +59,7 @@ import { Client, Versions } from 'node-powerdns';
 const client = new Client({
   baseUrl: 'http://127.0.0.1:8081',
   apiKey: process.env.POWERDNS_API_KEY!,
-  version: Versions[0],
+  version: '/api/v1',
   server: { id: 'localhost' }
 });
 ```
@@ -71,7 +72,7 @@ import PowerDNS, { Versions } from 'node-powerdns';
 const client = new PowerDNS({
   baseUrl: 'http://127.0.0.1:8081',
   apiKey: process.env.POWERDNS_API_KEY!,
-  version: Versions[0]
+  version: '/api/v1'
 });
 ```
 
@@ -94,6 +95,15 @@ for (const zone of zones) {
 }
 ```
 
+### 4. More examples
+
+- [examples/create-record.example.ts](./examples/create-record.example.ts)
+- [examples/create-zone-with-record-comment.example.ts](./examples/create-zone-with-record-comment.example.ts)
+- [examples/delete-record.example.ts](./examples/delete-record.example.ts)
+- [examples/list-zones.example.ts](./examples/list-zones.example.ts)
+- [examples/update-record.example.ts](./examples/update-record.example.ts)
+- [examples/update-zone.example.ts](./examples/update-zone.example.ts)
+
 ---
 
 ## API Reference (high level)
@@ -104,13 +114,17 @@ for (const zone of zones) {
 type ClientConfig<E = unknown> = {
   baseUrl: string;
   apiKey: string;
-  version: string;
+  version?: string;
   server?: { id: string };
   extra?: E;
+  fetch?: typeof fetch;
+  logger?: {
+    error?: (error: { error: string; errors?: string[] }) => void;
+  };
 };
 ```
 
-The client trims a trailing slash from `baseUrl` and uses `server.id = 'localhost'` when no server is provided.
+The client trims a trailing slash from `baseUrl`, defaults `version` to `'/api/v1'`, and uses `server.id = 'localhost'` when no server is provided.
 
 ---
 
@@ -179,8 +193,10 @@ import { Versions, ZoneType, type ZoneCreateRequest, type ZoneUpdateRequest } fr
 ### Notes
 
 - `baseUrl` should point at the PowerDNS webserver root, for example `http://127.0.0.1:8081`.
-- `version` should match the PowerDNS API path, for example `Versions[0]` for `/api/v1`.
+- `version` defaults to `'/api/v1'`; set it explicitly if your deployment uses a different API path.
 - `server.id` defaults to `localhost` if omitted.
+- `fetch` can be supplied to override the internal HTTP implementation for all requests, including `metrics`.
+- `logger.error` can be supplied to observe PowerDNS error payloads without forcing library-level console logging.
 - Most methods throw the JSON error payload returned by PowerDNS when the API responds with a non-2xx status.
 
 ---
@@ -213,7 +229,7 @@ import { Client, Versions } from 'node-powerdns';
 const client = new Client({
   baseUrl: 'http://127.0.0.1:8081',
   apiKey: process.env.POWERDNS_API_KEY!,
-  version: Versions[0]
+  version: '/api/v1'
 });
 
 const zone = await client.zones().get({ id: 'example.org.' }, { rrsets: true });
@@ -231,7 +247,7 @@ import { Client, Versions, type Error as PowerDNSError } from 'node-powerdns';
 const client = new Client({
   baseUrl: 'http://127.0.0.1:8081',
   apiKey: process.env.POWERDNS_API_KEY!,
-  version: Versions[0]
+  version: '/api/v1'
 });
 
 try {
